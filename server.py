@@ -21,8 +21,13 @@ except Exception as e:
     logging.error(f"Error: {e}")
 
 #  server source address (local host) along with port
-if port.isdigit():
-    address = (url, int(port))
+if port and port.isdigit():
+    port = int(port)
+    if 1<=port<=65535:
+        address = (url, port)
+    else:
+        logging.critical("Port is not in the range of 1-65535")
+        exit(1)
     logging.debug(f"Address: {address}")
 else:
     logging.critical("Port is not an int therefore could not bind the socket")
@@ -44,34 +49,40 @@ logging.info(f"HTTP Server is running on port: {port} and url: {url}")
 
 try:
     while True:
+        conn = None
         try:        
             # accepting a connection from the client
             conn, addr = tcp.accept()
             logging.debug(f"Connection: from IP and Port: {addr}")
+            conn.settimeout(10)
+
+            try:
             # reading the request from the client (decoding the data from bytes to string)
-            data = conn.recv(4096).decode("utf-8")
-            logging.debug(f"Data from client: {data}")
+                data = conn.recv(4096).decode("utf-8")
+                logging.debug(f"Data from client: {data}")
 
-            # sending sample HTTP response
-            response =(
-                "HTTP/1.1 200 OK\r\n"
-                "Content-Type: text/html\r\n"
-                "\r\n"
-                "<html><body><h1>Hello, World!</h1></body></html>"
-            )
+                # sending sample HTTP response
+                response =(
+                    "HTTP/1.1 200 OK\r\n"
+                    "Content-Type: text/html\r\n"
+                    "\r\n"
+                    "<html><body><h1>Hello, World!</h1></body></html>"
+                )
 
-            # encoding the response to bytes
-            http_response = response.encode("utf-8")
+                # encoding the response to bytes
+                http_response = response.encode("utf-8")
 
-            # sending the response to the client
-            conn.sendall(http_response)
+                # sending the response to the client
+                conn.sendall(http_response)
+            except Exception as e:
+                logging.error(f"Data could not be read from client:{e}")
 
-        except Exception as e:
-            logging.error(f"Error:{e}")
-        
+        except socket.timeout as e:
+            logging.error(f"Timeout:{e}")
         finally:
-            logging.info("Closing the connection")
-            conn.close()
+            if conn:
+                logging.info("Closing the connection")
+                conn.close()
 except KeyboardInterrupt:
     logging.info("Server is shutting down")
 finally:
