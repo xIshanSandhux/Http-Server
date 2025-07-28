@@ -42,39 +42,38 @@ tcp.listen(5)
 
 logging.info(f"HTTP Server is running on port: {port} and url: {url}")
 
+try:
+    while True:
+        try:        
+            # accepting a connection from the client
+            conn, addr = tcp.accept()
+            logging.debug(f"Connection: from IP and Port: {addr}")
+            # reading the request from the client (decoding the data from bytes to string)
+            data = conn.recv(4096).decode("utf-8")
+            logging.debug(f"Data from client: {data}")
 
-while True:
-    try:        
-        # accepting a connection from the client
-        conn, addr = tcp.accept()
-        logging.debug(f"Connection: from IP and Port: {addr}")
-        # reading the request from the client (decoding the data from bytes to string)
-        data = conn.recv(1204).decode("utf-8")
-        logging.debug(f"Data from client: {data}")
+            # sending sample HTTP response
+            response =(
+                "HTTP/1.1 200 OK\r\n"
+                "Content-Type: text/html\r\n"
+                "\r\n"
+                "<html><body><h1>Hello, World!</h1></body></html>"
+            )
 
-        # sending sample HTTP response
-        response =(
-            "HTTP/1.1 200 OK\r\n"
-            "Content-Type: text/html\r\n"
-            "\r\n"
-            "<html><body><h1>Hello, World!</h1></body></html>"
-        )
+            # encoding the response to bytes
+            http_response = response.encode("utf-8")
 
-        # encoding the response to bytes
-        http_response = response.encode("utf-8")
+            # sending the response to the client
+            conn.sendall(http_response)
 
-        # sending the response to the client
-        conn.sendall(http_response)
-        conn.close()
-
-    except Exception as e:
-        logging.eror(f"Error:{e}")
-
-
-
-
-
-
-
-
-
+        except Exception as e:
+            logging.error(f"Error:{e}")
+        
+        finally:
+            logging.info("Closing the connection")
+            conn.close()
+except KeyboardInterrupt:
+    logging.info("Server is shutting down")
+finally:
+    tcp.close()
+    exit(0)
