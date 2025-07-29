@@ -3,6 +3,8 @@ import os
 from dotenv import load_dotenv
 import logging
 from getHttpResponse import getHttpResponse
+from notFoundHttpResponse import notfoundHttpResponse
+from notImplmentedHttpResponse import notImplmentedHttpResponse
 
 load_dotenv()
 
@@ -91,9 +93,9 @@ try:
                     elif path == "/favicon.ico":
                         response = getHttpResponse("website/favicon.ico", "image/x-icon", httpVersion)
                     else:
-                        response = getHttpResponse("website/404.html", "text/html", httpVersion)
+                        response = notfoundHttpResponse("website/404.html", "text/html", httpVersion)
                 else:
-                    response = getHttpResponse("website/501.html", "text/html", httpVersion)
+                    response = notImplmentedHttpResponse("website/501.html", "text/html", httpVersion)
                 # sending the response to the client
                 conn.sendall(response)
             except Exception as e:
