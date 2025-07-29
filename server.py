@@ -2,9 +2,7 @@ import socket
 import os
 from dotenv import load_dotenv
 import logging
-from getHttpResponse import getHttpResponse
-from notFoundHttpResponse import notfoundHttpResponse
-from notImplmentedHttpResponse import notImplmentedHttpResponse
+from httpResponse import httpResponse
 
 load_dotenv()
 
@@ -89,13 +87,16 @@ try:
 
                 if requestType == "GET":
                     if path == "/":
-                        response  = getHttpResponse("website/homepage.html", "text/html", httpVersion)
+                        response  = httpResponse("website/homepage.html", "text/html", httpVersion, requestType, True,False)
                     elif path == "/favicon.ico":
-                        response = getHttpResponse("website/favicon.ico", "image/x-icon", httpVersion)
+                        response = httpResponse("website/favicon.ico", "image/x-icon", httpVersion, requestType, True,False)
                     else:
-                        response = notfoundHttpResponse("website/404.html", "text/html", httpVersion)
+                        logging.debug("404 page is being displayed")
+                        requestType = "NOT_FOUND"
+                        response = httpResponse("website/404.html", "text/html", httpVersion, requestType, True, True)
                 else:
-                    response = notImplmentedHttpResponse("website/501.html", "text/html", httpVersion)
+                    logging.debug("501 page is being displayed")
+                    response = httpResponse("website/501.html", "text/html", httpVersion, requestType, False,False)
                 # sending the response to the client
                 conn.sendall(response)
             except Exception as e:

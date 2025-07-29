@@ -4,165 +4,40 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Welcome to My HTTP Server</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            line-height: 1.6;
-            color: #333;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-        }
-        
-        .container {
-            max-width: 800px;
-            margin: 0 auto;
-            padding: 2rem;
-        }
-        
-        .welcome-card {
-            background: white;
-            border-radius: 15px;
-            padding: 3rem;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-            text-align: center;
-            margin-top: 2rem;
-        }
-        
-        h1 {
-            color: #4a5568;
-            font-size: 2.5rem;
-            margin-bottom: 1rem;
-            font-weight: 300;
-        }
-        
-        .subtitle {
-            color: #718096;
-            font-size: 1.2rem;
-            margin-bottom: 2rem;
-        }
-        
-        .status {
-            background: #48bb78;
-            color: white;
-            padding: 0.5rem 1.5rem;
-            border-radius: 25px;
-            display: inline-block;
-            margin: 1rem 0;
-            font-weight: 500;
-        }
-        
-        .features {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 1.5rem;
-            margin-top: 2rem;
-        }
-        
-        .feature {
-            background: #f7fafc;
-            padding: 1.5rem;
-            border-radius: 10px;
-            border-left: 4px solid #667eea;
-        }
-        
-        .feature h3 {
-            color: #4a5568;
-            margin-bottom: 0.5rem;
-        }
-        
-        .feature p {
-            color: #718096;
-            font-size: 0.9rem;
-        }
-        
-        .footer {
-            text-align: center;
-            margin-top: 2rem;
-            color: white;
-            opacity: 0.8;
-        }
-    </style>
 </head>
 <body>
-    <div class="container">
-        <div class="welcome-card">
-            <h1>Hey there! 👋</h1>
-            <p class="subtitle">Just messing around with HTTP servers for fun</p>
-            
-            <div class="status">Server Online</div>
-            
-            <div class="features">
-                <div class="feature">
-                    <h3>Just Learning</h3>
-                    <p>Wanted to see how HTTP servers actually work</p>
-                </div>
-                <div class="feature">
-                    <h3>Built It Myself</h3>
-                    <p>No frameworks, just pure Python and sockets and basic HTML and CSS</p>
-                </div>
-                <div class="feature">
-                    <h3>For Fun</h3>
-                    <p>Because coding is more fun when you build cool stuff</p>
-                </div>
-            </div>
-            
-            <div style="margin-top: 2rem; padding: 1.5rem; background: #f8f9fa; border-radius: 10px;">
-                <h3 style="margin-bottom: 1rem; color: #4a5568;">Register & Login</h3>
-                
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
-                    <!-- Register Form -->
-                    <div>
-                        <h4 style="margin-bottom: 1rem; color: #4a5568;">Register</h4>
-                        <form action="/register" method="POST" style="display: flex; flex-direction: column; gap: 0.5rem;">
-                            <input type="text" name="username" placeholder="Username" 
-                                   style="padding: 0.5rem; border: 1px solid #ddd; border-radius: 5px;">
-                            <input type="email" name="email" placeholder="Email" 
-                                   style="padding: 0.5rem; border: 1px solid #ddd; border-radius: 5px;">
-                            <input type="password" name="password" placeholder="Password" 
-                                   style="padding: 0.5rem; border: 1px solid #ddd; border-radius: 5px;">
-                            <button type="submit" 
-                                    style="padding: 0.5rem 1rem; background: #48bb78; color: white; border: none; border-radius: 5px; cursor: pointer;">
-                                Register
-                            </button>
-                        </form>
-                    </div>
-                    
-                    <!-- Login Form -->
-                    <div>
-                        <h4 style="margin-bottom: 1rem; color: #4a5568;">Login</h4>
-                        <form action="/login" method="POST" style="display: flex; flex-direction: column; gap: 0.5rem;">
-                            <input type="text" name="username" placeholder="Username" 
-                                   style="padding: 0.5rem; border: 1px solid #ddd; border-radius: 5px;">
-                            <input type="password" name="password" placeholder="Password" 
-                                   style="padding: 0.5rem; border: 1px solid #ddd; border-radius: 5px;">
-                            <button type="submit" 
-                                    style="padding: 0.5rem 1rem; background: #667eea; color: white; border: none; border-radius: 5px; cursor: pointer;">
-                                Login
-                            </button>
-                        </form>
-                    </div>
-                </div>
-                
-                <p style="margin-top: 1rem; font-size: 0.9rem; color: #718096;">
-                    Test your server's form handling with these simple forms
-                </p>
-            </div>
-            
-            <p style="margin-top: 2rem; color: #718096;">
-                So yeah, I made this HTTP server from scratch. Pretty cool right? 
-                It's not perfect but it works! Feel free to poke around and test the forms above.
-            </p>
-        </div>
-        
-        <div class="footer">
-            <p>Made by Ishan • Because why not?</p>
-        </div>
-    </div>
+    <h1>Hey there!</h1>
+    <p>Just messing around with HTTP servers for fun</p>
+    
+    <p><strong>Server Status:</strong> Online and ready to party!</p>
+    
+    <h2>What's this all about?</h2>
+    <ul>
+        <li><strong>Just Learning:</strong> Wanted to see how HTTP servers actually work under the hood</li>
+        <li><strong>Built It Myself:</strong> No fancy frameworks, just pure Python and sockets and basic HTML</li>
+        <li><strong>For Fun:</strong> Because coding is more fun when you build cool stuff from scratch!</li>
+    </ul>
+    
+    <h2>Test the Forms!</h2>
+    <p>Try out these forms to test your server's form handling skills:</p>
+    
+    <h3>Register</h3>
+    <form action="/register" method="POST">
+        <p>Username: <input type="text" name="username" placeholder="Enter username"></p>
+        <p>Email: <input type="email" name="email" placeholder="Enter email"></p>
+        <p>Password: <input type="password" name="password" placeholder="Enter password"></p>
+        <p><button type="submit">Register</button></p>
+    </form>
+    
+    <h3>Login</h3>
+    <form action="/login" method="POST">
+        <p>Username: <input type="text" name="username" placeholder="Enter username"></p>
+        <p>Password: <input type="password" name="password" placeholder="Enter password"></p>
+        <p><button type="submit">Login</button></p>
+    </form>
+    
+    <p>So yeah, I made this HTTP server from scratch. Pretty cool right? It's not perfect but it works! Feel free to poke around and test the forms above.</p>
+    
+    <p><em>Made by Ishan • Because why not?</em></p>
 </body>
 </html>
