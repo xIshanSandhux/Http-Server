@@ -2,6 +2,7 @@ import socket
 import os
 from dotenv import load_dotenv
 import logging
+from getHttpResponse import getHttpResponse
 
 load_dotenv()
 
@@ -57,23 +58,44 @@ try:
             conn.settimeout(10)
 
             try:
-            # reading the request from the client (decoding the data from bytes to string)
+                # reading the request from the client (decoding the data from bytes to string)
                 data = conn.recv(4096).decode("utf-8")
                 logging.debug(f"Data from client: {data}")
+                if not data:
+                    logging.error("No data from client")
+                    # ignoring the rest of the code for this connection
+                    continue
 
-                # sending sample HTTP response
-                response =(
-                    "HTTP/1.1 200 OK\r\n"
-                    "Content-Type: text/html\r\n"
-                    "\r\n"
-                    "<html><body><h1>Hello, World!</h1></body></html>"
-                )
+                # request validation
+                if "\r\n" not in data or "\r\n\r\n" not in data:
+                    logging.error("Invalid request")
+                    continue
 
-                # encoding the response to bytes
-                http_response = response.encode("utf-8")
+                headerList = data.split("\r\n")
+                logging.debug(f"Header List: {headerList}")
 
+                requestLine = headerList[0]
+                logging.debug(f"Request Line: {requestLine}")
+
+                requestComponents = requestLine.split(" ")
+                logging.debug(f"Request Components: {requestComponents}")
+
+                requestType = requestComponents[0]
+                path = requestComponents[1]
+                httpVersion = requestComponents[2]
+                logging.debug(f"Request Type: {requestType} and Path: {path}")
+
+                if requestType == "GET":
+                    if path == "/":
+                        response  = getHttpResponse("website/homepage.html", "text/html", httpVersion)
+                    elif path == "/favicon.ico":
+                        response = getHttpResponse("website/favicon.ico", "image/x-icon", httpVersion)
+                    else:
+                        response = getHttpResponse("website/404.html", "text/html", httpVersion)
+                else:
+                    response = getHttpResponse("website/501.html", "text/html", httpVersion)
                 # sending the response to the client
-                conn.sendall(http_response)
+                conn.sendall(response)
             except Exception as e:
                 logging.error(f"Data could not be read from client:{e}")
 
