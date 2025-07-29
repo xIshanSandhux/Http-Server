@@ -93,11 +93,8 @@ try:
                     else:
                         response = getHttpResponse("website/404.html", "text/html", httpVersion)
 
-                # encoding the response to bytes
-                http_response = response
-
                 # sending the response to the client
-                conn.sendall(http_response)
+                conn.sendall(response)
             except Exception as e:
                 logging.error(f"Data could not be read from client:{e}")
 
