@@ -94,6 +94,12 @@ try:
                         logging.debug("404 page is being displayed")
                         requestType = "NOT_FOUND"
                         response = httpResponse("website/404.html", "text/html", httpVersion, requestType, True, True)
+                
+                elif requestType == "POST":
+                    if path == "/register":
+                        d = headerList[-1]
+                        logging.debug(f"POST request body: {d}")
+                
                 else:
                     logging.debug("501 page is being displayed")
                     response = httpResponse("website/501.html", "text/html", httpVersion, requestType, False,False)
