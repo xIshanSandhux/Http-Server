@@ -3,6 +3,7 @@ import os
 from dotenv import load_dotenv
 import logging
 from httpResponse import httpResponse
+from post import registeration, login
 
 load_dotenv()
 
@@ -58,9 +59,52 @@ try:
             conn.settimeout(10)
 
             try:
-                # reading the request from the client (decoding the data from bytes to string)
-                data = conn.recv(4096).decode("utf-8")
-                logging.debug(f"Data from client: {data}")
+                # reading the request from the client (looping until the end of the request)
+                fullRequest = b""
+                while b"\r\n\r\n" not in fullRequest:
+                    chunks = conn.recv(1024)
+                    if not chunks:
+                        break
+                    fullRequest += chunks
+
+                
+                # decoding the request from bytes to string
+                # splitting the request into headers and payload
+                # splitting the headers into a list
+                data = fullRequest.decode("utf-8")
+                headers, payload = data.split("\r\n\r\n")
+                headerList = headers.split("\r\n")
+
+                # logging the payload and the header list
+                logging.debug(f"Payload: {payload}")
+                logging.debug(f"Header List: {headerList}")
+                
+                # if there is a playload, getting the content length and the payload based on the content length
+                if payload:
+                    for line in headerList:
+                        if line.startswith("Content-Length"):
+                            contentLength = int(line.split(" ")[1])
+                            logging.debug(f"Content Length: {contentLength}")
+                        elif line.startswith("Content-Type"):
+                            contentType = line.split(" ")[1]
+                            logging.debug(f"Content Type: {contentType}")
+
+                    if contentLength>0:
+                        fullPayload = payload[:contentLength]
+                        logging.debug(f"DecodedFull Payload: {fullPayload}")
+
+                    # ---------Content Type: application/x-www-form-urlencoded---------
+                    if fullPayload and contentType == "application/x-www-form-urlencoded":
+                        items = fullPayload.split("&")
+                        logging.debug(f"Items: {items}")
+                        itemsDict = {}
+                        for item in items:
+                            key, value = item.split("=")
+                            if key not in itemsDict:
+                                itemsDict[key] = value
+                        logging.debug(f"Items based on key value pairs: {itemsDict}")
+                    # ---------Content Type: application/x-www-form-urlencoded---------
+
                 if not data:
                     logging.error("No data from client")
                     # ignoring the rest of the code for this connection
@@ -71,8 +115,8 @@ try:
                     logging.error("Invalid request")
                     continue
 
-                headerList = data.split("\r\n")
-                logging.debug(f"Header List: {headerList}")
+                # headerList = data.split("\r\n")
+                # logging.debug(f"Header List: {headerList}")
 
                 requestLine = headerList[0]
                 logging.debug(f"Request Line: {requestLine}")
@@ -94,6 +138,18 @@ try:
                         logging.debug("404 page is being displayed")
                         requestType = "NOT_FOUND"
                         response = httpResponse("website/404.html", "text/html", httpVersion, requestType, True, True)
+                
+                elif requestType == "POST":
+                    contentLength = None
+                    if path == "/register":
+                        if registeration(itemsDict):
+                            logging.debug("Registration successful")
+                    elif path =="/login":
+                        if login(itemsDict):
+                            logging.debug("Login successful")
+                        else:
+                            logging.debug("Login failed")
+                
                 else:
                     logging.debug("501 page is being displayed")
                     response = httpResponse("website/501.html", "text/html", httpVersion, requestType, False,False)
