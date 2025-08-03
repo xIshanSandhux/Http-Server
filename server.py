@@ -59,8 +59,25 @@ try:
 
             try:
                 # reading the request from the client (decoding the data from bytes to string)
-                data = conn.recv(4096).decode("utf-8")
-                logging.debug(f"Data from client: {data}")
+                fullRequest = b""
+                while b"\r\n\r\n" not in fullRequest:
+                    chunks = conn.recv(1024)
+                    logging.debug(f"Chunks: {chunks}")
+                    if not chunks:
+                        break
+                    fullRequest += chunks
+
+                data = fullRequest.decode("utf-8")
+                logging.debug(f"Full Request including payload: {data}")
+                headers, payload = data.split("\r\n\r\n")
+                headerList = headers.split("\r\n")
+                logging.debug(f"Headers: {headers}")
+                logging.debug(f"Payload: {payload}")
+                logging.debug(f"Header List: {headerList}")
+                
+                if payload:
+                    contentLength = headerList[3].split(" ")[1]
+                    logging.debug(f"Content Length: {contentLength}")
                 if not data:
                     logging.error("No data from client")
                     # ignoring the rest of the code for this connection
@@ -71,8 +88,8 @@ try:
                     logging.error("Invalid request")
                     continue
 
-                headerList = data.split("\r\n")
-                logging.debug(f"Header List: {headerList}")
+                # headerList = data.split("\r\n")
+                # logging.debug(f"Header List: {headerList}")
 
                 requestLine = headerList[0]
                 logging.debug(f"Request Line: {requestLine}")
@@ -96,7 +113,13 @@ try:
                         response = httpResponse("website/404.html", "text/html", httpVersion, requestType, True, True)
                 
                 elif requestType == "POST":
+                    contentLength = None
                     if path == "/register":
+                        d = headerList[-1]
+                        contentLength = headerList[3].split(" ")[1]
+                        logging.debug(f"POST request body: {d}")
+                        logging.debug(f"Content Length: {contentLength}")
+                    elif path =="/login":
                         d = headerList[-1]
                         logging.debug(f"POST request body: {d}")
                 
