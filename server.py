@@ -58,26 +58,54 @@ try:
             conn.settimeout(10)
 
             try:
-                # reading the request from the client (decoding the data from bytes to string)
+                # reading the request from the client (looping until the end of the request)
                 fullRequest = b""
                 while b"\r\n\r\n" not in fullRequest:
                     chunks = conn.recv(1024)
-                    logging.debug(f"Chunks: {chunks}")
                     if not chunks:
                         break
                     fullRequest += chunks
 
+                
+                # decoding the request from bytes to string
+                # splitting the request into headers and payload
+                # splitting the headers into a list
                 data = fullRequest.decode("utf-8")
-                logging.debug(f"Full Request including payload: {data}")
                 headers, payload = data.split("\r\n\r\n")
                 headerList = headers.split("\r\n")
-                logging.debug(f"Headers: {headers}")
+
+                # logging the payload and the header list
                 logging.debug(f"Payload: {payload}")
                 logging.debug(f"Header List: {headerList}")
                 
+                # if there is a playload, getting the content length and the payload based on the content length
                 if payload:
-                    contentLength = headerList[3].split(" ")[1]
-                    logging.debug(f"Content Length: {contentLength}")
+                    fullPayload = ""
+                    for line in headerList:
+                        if line.startswith("Content-Length"):
+                            contentLength = int(line.split(" ")[1])
+                            logging.debug(f"Content Length: {contentLength}")
+                        elif line.startswith("Content-Type"):
+                            contentType = line.split(" ")[1]
+                            logging.debug(f"Content Type: {contentType}")
+
+                    if contentLength>0:
+                        for x in range(contentLength):
+                            fullPayload += payload[x]
+                    logging.debug(f"DecodedFull Payload: {fullPayload}")
+
+                    # ---------Content Type: application/x-www-form-urlencoded---------
+                    if fullPayload and contentType == "application/x-www-form-urlencoded":
+                        items = fullPayload.split("&")
+                        logging.debug(f"Items: {items}")
+                        itemsDict = {}
+                        for item in items:
+                            key, value = item.split("=")
+                            if key not in itemsDict:
+                                itemsDict[key] = value
+                        logging.debug(f"Items based on key value pairs: {itemsDict}")
+                    # ---------Content Type: application/x-www-form-urlencoded---------
+
                 if not data:
                     logging.error("No data from client")
                     # ignoring the rest of the code for this connection
@@ -116,9 +144,6 @@ try:
                     contentLength = None
                     if path == "/register":
                         d = headerList[-1]
-                        contentLength = headerList[3].split(" ")[1]
-                        logging.debug(f"POST request body: {d}")
-                        logging.debug(f"Content Length: {contentLength}")
                     elif path =="/login":
                         d = headerList[-1]
                         logging.debug(f"POST request body: {d}")
