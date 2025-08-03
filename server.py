@@ -3,6 +3,7 @@ import os
 from dotenv import load_dotenv
 import logging
 from httpResponse import httpResponse
+from post import registeration, login
 
 load_dotenv()
 
@@ -80,7 +81,6 @@ try:
                 
                 # if there is a playload, getting the content length and the payload based on the content length
                 if payload:
-                    fullPayload = ""
                     for line in headerList:
                         if line.startswith("Content-Length"):
                             contentLength = int(line.split(" ")[1])
@@ -90,9 +90,8 @@ try:
                             logging.debug(f"Content Type: {contentType}")
 
                     if contentLength>0:
-                        for x in range(contentLength):
-                            fullPayload += payload[x]
-                    logging.debug(f"DecodedFull Payload: {fullPayload}")
+                        fullPayload = payload[:contentLength]
+                        logging.debug(f"DecodedFull Payload: {fullPayload}")
 
                     # ---------Content Type: application/x-www-form-urlencoded---------
                     if fullPayload and contentType == "application/x-www-form-urlencoded":
@@ -143,10 +142,13 @@ try:
                 elif requestType == "POST":
                     contentLength = None
                     if path == "/register":
-                        d = headerList[-1]
+                        if registeration(itemsDict):
+                            logging.debug("Registration successful")
                     elif path =="/login":
-                        d = headerList[-1]
-                        logging.debug(f"POST request body: {d}")
+                        if login(itemsDict):
+                            logging.debug("Login successful")
+                        else:
+                            logging.debug("Login failed")
                 
                 else:
                     logging.debug("501 page is being displayed")
