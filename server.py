@@ -72,15 +72,10 @@ try:
                 # splitting the request into headers and payload
                 # splitting the headers into a list
                 initialData = headersBinary.decode("utf-8")
-                # if not initialData:
-                #     logging.error("No data from client")
-                #     # ignoring the rest of the code for this connection
-                #     continue
-
-                # # request validation
-                # if "\r\n" not in initialData or "\r\n\r\n" not in initialData:
-                #     logging.error("Invalid request")
-                #     continue
+                if not initialData:
+                    logging.error("No data from client")
+                    # ignoring the rest of the code for this connection
+                    continue
 
                 headers, payload = initialData.split("\r\n\r\n")
                 headerList = headers.split("\r\n")
@@ -88,7 +83,7 @@ try:
                 logging.debug(f"Full Request: {headersBinary}")
 
                 # logging the payload and the header list
-                logging.debug(f"Payload: {payload}")
+                # logging.debug(f"Payload: {payload}")
                 logging.debug(f"Header List: {headerList}")
 
                 contentLength = 0
@@ -115,12 +110,23 @@ try:
                                 break
                             binaryPayload += chunk
                         boundary = boundary.encode("utf-8")
-                        logging.debug(f"Binary Payload: {binaryPayload}")
                         listbinary = binaryPayload.split(b"--"+boundary)
                         logging.debug(f"LIST BINARY: {listbinary}")
-                            # payload = binaryPayload.decode("utf-8")
+                        for line in listbinary:
+                            if b"name=\"username\"" in line:
+                                usernameLine = line.decode("utf-8").split(" ")[2]
+                                username = usernameLine.split("\r\n\r\n")[1].strip("\r\n")
+                                logging.debug(f"Username: {username}")
+
+                            elif b"name=\"password\"" in line:
+                                passwordLine = line.decode("utf-8").split(" ")[2]
+                                password = passwordLine.split("\r\n\r\n")[1].strip("\r\n")
+                                logging.debug(f"Password: {password}")
+                            elif b"name=\"email\"" in line:
+                                emailLine = line.decode("utf-8").split(" ")[2]
+                                email = emailLine.split("\r\n\r\n")[1].strip("\r\n")
+                                logging.debug(f"Email: {email}")
                         fullPayload = payload[:contentLength]
-                        logging.debug(f"DecodedFull Payload: {fullPayload}")
 
                 # -------------Content Type: multipart/form-data-------------------
 
