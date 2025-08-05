@@ -21,10 +21,11 @@
     <h2>Test the Forms!</h2>
     
     <h3>Register</h3>
-    <form action="/register" method="POST" enctype="application/x-www-form-urlencoded">
+    <form action="/register" method="POST" enctype="multipart/form-data">
         <p>Username: <input type="text" name="username" placeholder="Enter username"></p>
         <p>Email: <input type="email" name="email" placeholder="Enter email"></p>
         <p>Password: <input type="password" name="password" placeholder="Enter password"></p>
+        <p>Select an image to upload: <input type="file" name="image" accept="image/*" required></p>
         <p><button type="submit">Register</button></p>
     </form>
     
@@ -34,6 +35,12 @@
         <p>Password: <input type="password" name="password" placeholder="Enter password"></p>
         <p><button type="submit">Login</button></p>
     </form>
+    
+    <!-- <h3>Upload Image</h3>
+    <form action="/upload" method="POST" enctype="multipart/form-data">
+        <p>Select an image to upload: <input type="file" name="image" accept="image/*" required></p>
+        <p><button type="submit">Upload Image</button></p>
+    </form> -->
     
     <p>So yeah, I made this HTTP server from scratch. Pretty cool right? Feel free to poke around and test the forms above.</p>
     
