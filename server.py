@@ -72,6 +72,7 @@ try:
                 # splitting the request into headers and payload
                 # splitting the headers into a list
                 initialData = headersBinary.decode("utf-8")
+                logging.debug(f"Initial Data: {initialData}")
                 if not initialData:
                     logging.error("No data from client")
                     # ignoring the rest of the code for this connection
@@ -79,8 +80,9 @@ try:
 
                 headers, payload = initialData.split("\r\n\r\n")
                 headerList = headers.split("\r\n")
+                logging.debug(f"Payload: {payload}")
 
-                logging.debug(f"Full Request: {headersBinary}")
+                # logging.debug(f"Full Request: {headersBinary}")
 
                 # logging the payload and the header list
                 # logging.debug(f"Payload: {payload}")
@@ -112,38 +114,48 @@ try:
                         boundary = boundary.encode("utf-8")
                         listbinary = binaryPayload.split(b"--"+boundary)
                         logging.debug(f"LIST BINARY: {listbinary}")
+                        itemsDict = {}
                         for line in listbinary:
                             if b"name=\"username\"" in line:
                                 usernameLine = line.decode("utf-8").split(" ")[2]
                                 username = usernameLine.split("\r\n\r\n")[1].strip("\r\n")
                                 logging.debug(f"Username: {username}")
+                                itemsDict["username"] = username
 
                             elif b"name=\"password\"" in line:
                                 passwordLine = line.decode("utf-8").split(" ")[2]
                                 password = passwordLine.split("\r\n\r\n")[1].strip("\r\n")
-                                logging.debug(f"Password: {password}")
+                                itemsDict["password"] = password
+
                             elif b"name=\"email\"" in line:
                                 emailLine = line.decode("utf-8").split(" ")[2]
                                 email = emailLine.split("\r\n\r\n")[1].strip("\r\n")
-                                logging.debug(f"Email: {email}")
-                        fullPayload = payload[:contentLength]
-
-                # -------------Content Type: multipart/form-data-------------------
+                                itemsDict["email"] = email
+                            
+                            elif b"name=\"image\"" in line:
+                                imageData = line.split(b"\r\n\r\n")[1]
+                                itemsDict["profilePicture"] = imageData
 
                 # ---------Content Type: application/x-www-form-urlencoded---------
-                # if fullPayload and contentType == "application/x-www-form-urlencoded":
-                #     items = fullPayload.split("&")
-                #     logging.debug(f"Items: {items}")
-                #     itemsDict = {}
-                #     for item in items:
-                #         key, value = item.split("=")
-                #         if key not in itemsDict:
-                #             itemsDict[key] = value
-                #     logging.debug(f"Items based on key value pairs: {itemsDict}")
+                elif contentType == "application/x-www-form-urlencoded":
+                    binaryPayload = b""
+                    if contentLength>0:
+                        while len(payload)<contentLength:
+                            chunks = conn.recv(1024)
+                            if not chunks:
+                                break
+                            binaryPayload += chunks
+                            payload += binaryPayload.decode("utf-8")
+                    
+                    items = payload.split("&")
+                    logging.debug(f"Items: {items}")
+                    itemsDict2 = {}
+                    for item in items:
+                        key, value = item.split("=")
+                        if key not in itemsDict2:
+                            itemsDict2[key] = value
+                    logging.debug(f"Items based on key value pairs: {itemsDict2}")
                 # ---------Content Type: application/x-www-form-urlencoded---------
-
-                # headerList = data.split("\r\n")
-                # logging.debug(f"Header List: {headerList}")
 
                 requestLine = headerList[0]
                 logging.debug(f"Request Line: {requestLine}")
@@ -170,8 +182,10 @@ try:
                     if path == "/register":
                         if registeration(itemsDict):
                             logging.debug("Registration successful")
+                        else:
+                            logging.debug("Registration failed")
                     elif path =="/login":
-                        if login(itemsDict):
+                        if login(itemsDict2):
                             logging.debug("Login successful")
                         else:
                             logging.debug("Login failed")

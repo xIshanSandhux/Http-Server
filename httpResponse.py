@@ -67,6 +67,3 @@ def httpResponse(path, contentType, httpVersion, requestType, isImplemented,page
     else:
         # if the http body does not exist, then sending a 404 response for 404 file
         return getNotFoundResponse()
-
-
-

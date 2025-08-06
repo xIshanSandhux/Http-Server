@@ -5,10 +5,7 @@ users = {}
 
 def registeration(itemsDict: dict) -> bool:
     if "username" in itemsDict and "password" in itemsDict and "email" in itemsDict:
-        email = urllib.parse.unquote(itemsDict["email"])
-        password = urllib.parse.unquote(itemsDict["password"])
-        username = urllib.parse.unquote(itemsDict["username"])
-        users[email] = {"username": username, "password": password}
+        users[itemsDict["email"]] = {"username": itemsDict["username"], "password": itemsDict["password"], "profilePicture": itemsDict["profilePicture"]}
         logging.info(f"TotalUsers: {users}")
         return True
     else:
