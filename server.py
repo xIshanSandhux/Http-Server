@@ -145,7 +145,7 @@ try:
                             if not chunks:
                                 break
                             binaryPayload += chunks
-                            payload += binaryPayload.decode("utf-8")
+                        payload += binaryPayload.decode("utf-8")
                     
                     items = payload.split("&")
                     logging.debug(f"Items: {items}")
