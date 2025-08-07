@@ -3,8 +3,8 @@ import os
 from dotenv import load_dotenv
 import logging
 from httpResponse import httpResponse
-from post import registeration, login
-
+from post import registeration, login, users
+import urllib.parse
 load_dotenv()
 
 # logging configuration
@@ -87,7 +87,7 @@ try:
                 # logging the payload and the header list
                 # logging.debug(f"Payload: {payload}")
                 logging.debug(f"Header List: {headerList}")
-
+                profileContent={}
                 contentLength = 0
                 contentType = ""
                 boundary = ""
@@ -145,7 +145,8 @@ try:
                             if not chunks:
                                 break
                             binaryPayload += chunks
-                        payload += binaryPayload.decode("utf-8")
+                            payload += binaryPayload.decode("utf-8")
+                        logging.debug(f"Payload length: {len(payload)}")
                     
                     items = payload.split("&")
                     logging.debug(f"Items: {items}")
@@ -186,6 +187,16 @@ try:
                             logging.debug("Registration failed")
                     elif path =="/login":
                         if login(itemsDict2):
+                            email = urllib.parse.unquote(itemsDict2["email"])
+                            profileContent[email] = {"username":users[email]["username"], "profilePicture":users[email]["profilePicture"]}
+
+                            with open("website/profile.html","r") as file:
+                                content = file.read()
+                            content = content.replace("{{username}}", profileContent[email]["username"])
+                            # content = content.replace("{{profilePicture}}", profileContent[email]["profilePicture"])
+                            # response = httpResponse(content, "text/html", httpVersion, requestType, True, False)
+
+                            logging.debug(f"Profile Content: {profileContent[email]}")
                             logging.debug("Login successful")
                         else:
                             logging.debug("Login failed")
