@@ -3,8 +3,9 @@ import os
 from dotenv import load_dotenv
 import logging
 from httpResponse import httpResponse
-from post import registeration, login
-
+from post import registeration, login, users
+import urllib.parse
+import base64
 load_dotenv()
 
 # logging configuration
@@ -87,9 +88,10 @@ try:
                 # logging the payload and the header list
                 # logging.debug(f"Payload: {payload}")
                 logging.debug(f"Header List: {headerList}")
-
+                profileContent={}
                 contentLength = 0
                 contentType = ""
+                imageType = b""
                 boundary = ""
                 for line in headerList:
                     if line.startswith("Content-Length"):
@@ -134,6 +136,8 @@ try:
                             
                             elif b"name=\"image\"" in line:
                                 imageData = line.split(b"\r\n\r\n")[1]
+                                imageType = line.split(b"\r\n\r\n")[0].split(b"Content-Type: ")[1]
+                                logging.debug(f"Image Type: {imageType}")
                                 itemsDict["profilePicture"] = imageData
 
                 # ---------Content Type: application/x-www-form-urlencoded---------
@@ -145,7 +149,8 @@ try:
                             if not chunks:
                                 break
                             binaryPayload += chunks
-                        payload += binaryPayload.decode("utf-8")
+                            payload += binaryPayload.decode("utf-8")
+                        logging.debug(f"Payload length: {len(payload)}")
                     
                     items = payload.split("&")
                     logging.debug(f"Items: {items}")
@@ -173,6 +178,22 @@ try:
                         response  = httpResponse("website/homepage.html", "text/html", httpVersion, requestType, True,False)
                     elif path == "/favicon.ico":
                         response = httpResponse("website/favicon.ico", "image/x-icon", httpVersion, requestType, True,False)
+                    elif path == "/profile":
+                        email = urllib.parse.unquote(itemsDict2["email"])
+                        profileContent[email] = {"username":users[email]["username"], "profilePicture":users[email]["profilePicture"]}
+
+                        with open("website/profile.html","r") as file:
+                            content = file.read()
+                        content = content.replace("{{username}}", profileContent[email]["username"])
+                        content = content.replace("{{email}}", email)
+                        # content = content.encode("utf-8")
+                        content = content.replace("{{imageType}}", imageType.decode("utf-8"))
+                        content = content.replace("{{profilePicture}}", base64.b64encode(profileContent[email]["profilePicture"]).decode("utf-8"))
+
+                        response = f"HTTP/1.1 200 Well here you go buddy\r\nContent-type: text/html\r\n Content-Length: {len(content)}\r\n\r\n"
+
+                        response = response.encode("utf-8") + content.encode("utf-8")
+                        logging.debug(f"Response: {response.decode('utf-8')}")
                     else:
                         logging.debug("404 page is being displayed")
                         requestType = "NOT_FOUND"
@@ -186,6 +207,10 @@ try:
                             logging.debug("Registration failed")
                     elif path =="/login":
                         if login(itemsDict2):
+
+                            response = f"HTTP/1.1 302 Found\r\nLocation: /profile\r\nContent-type: text/html\r\n\r\n"
+                            response = response.encode("utf-8")
+                            # logging.debug(f"Response: {response.decode('utf-8')}")
                             logging.debug("Login successful")
                         else:
                             logging.debug("Login failed")
