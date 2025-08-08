@@ -8,7 +8,6 @@ def registeration(itemsDict: dict) -> bool:
         if itemsDict["email"] in users:
             return False
         users[itemsDict["email"]] = {"username": itemsDict["username"], "password": itemsDict["password"], "profilePicture": itemsDict["profilePicture"]}
-        logging.info(f"TotalUsers: {users}")
         return True
     else:
         return False
