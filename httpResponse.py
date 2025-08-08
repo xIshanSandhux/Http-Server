@@ -57,11 +57,6 @@ def httpResponse(path, contentType, httpVersion, requestType, isImplemented,page
         httpBody = getHttpBody("website/404.html")
     # if the http body exists, then we can send the response
     if httpBody:
-        logging.debug(f"Sending response with status code {statusCode}")
-        logging.debug(f"Sending response with content type {contentType}")
-        logging.debug(f"Sending response with http version {httpVersion}")
-        logging.debug(f"Sending response with length {len(httpBody)}")
-        logging.debug(f"Sending response with http body {httpBody}")
         response = httpHeaders(contentType,len(httpBody),httpVersion,statusCode)+httpBody
         return response
     else:

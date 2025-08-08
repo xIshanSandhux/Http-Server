@@ -73,7 +73,6 @@ try:
                 # splitting the request into headers and payload
                 # splitting the headers into a list
                 initialData = headersBinary.decode("utf-8")
-                logging.debug(f"Initial Data: {initialData}")
                 if not initialData:
                     logging.error("No data from client")
                     # ignoring the rest of the code for this connection
@@ -81,13 +80,7 @@ try:
 
                 headers, payload = initialData.split("\r\n\r\n")
                 headerList = headers.split("\r\n")
-                logging.debug(f"Payload: {payload}")
 
-                # logging.debug(f"Full Request: {headersBinary}")
-
-                # logging the payload and the header list
-                # logging.debug(f"Payload: {payload}")
-                logging.debug(f"Header List: {headerList}")
                 profileContent={}
                 contentLength = 0
                 contentType = ""
@@ -96,13 +89,10 @@ try:
                 for line in headerList:
                     if line.startswith("Content-Length"):
                         contentLength = int(line.split(" ")[1])
-                        logging.debug(f"Content Length: {contentLength}")
                     elif line.startswith("Content-Type"):
                         contentType = line.split(" ")[1].strip(";")
                         if contentType == "multipart/form-data":
                             boundary = line.split(";")[1].split("=")[1]
-                        logging.debug(f"Content Type: {contentType}")
-                        logging.debug(f"Boundary: {boundary}")
                 
                 # -------------Content Type: multipart/form-data-------------------
                 if contentType == "multipart/form-data" and boundary:
@@ -115,13 +105,11 @@ try:
                             binaryPayload += chunk
                         boundary = boundary.encode("utf-8")
                         listbinary = binaryPayload.split(b"--"+boundary)
-                        logging.debug(f"LIST BINARY: {listbinary}")
                         itemsDict = {}
                         for line in listbinary:
                             if b"name=\"username\"" in line:
                                 usernameLine = line.decode("utf-8").split(" ")[2]
                                 username = usernameLine.split("\r\n\r\n")[1].strip("\r\n")
-                                logging.debug(f"Username: {username}")
                                 itemsDict["username"] = username
 
                             elif b"name=\"password\"" in line:
@@ -137,7 +125,6 @@ try:
                             elif b"name=\"image\"" in line:
                                 imageData = line.split(b"\r\n\r\n")[1]
                                 imageType = line.split(b"\r\n\r\n")[0].split(b"Content-Type: ")[1]
-                                logging.debug(f"Image Type: {imageType}")
                                 itemsDict["profilePicture"] = imageData
 
                 # ---------Content Type: application/x-www-form-urlencoded---------
@@ -150,28 +137,23 @@ try:
                                 break
                             binaryPayload += chunks
                             payload += binaryPayload.decode("utf-8")
-                        logging.debug(f"Payload length: {len(payload)}")
                     
                     items = payload.split("&")
-                    logging.debug(f"Items: {items}")
                     itemsDict2 = {}
                     for item in items:
                         key, value = item.split("=")
                         if key not in itemsDict2:
                             itemsDict2[key] = value
-                    logging.debug(f"Items based on key value pairs: {itemsDict2}")
                 # ---------Content Type: application/x-www-form-urlencoded---------
 
                 requestLine = headerList[0]
-                logging.debug(f"Request Line: {requestLine}")
 
                 requestComponents = requestLine.split(" ")
-                logging.debug(f"Request Components: {requestComponents}")
 
                 requestType = requestComponents[0]
                 path = requestComponents[1]
                 httpVersion = requestComponents[2]
-                logging.debug(f"Request Type: {requestType} and Path: {path}")
+                logging.info(f"Request Type: {requestType} and Path: {path}")
 
                 if requestType == "GET":
                     if path == "/":
@@ -186,14 +168,12 @@ try:
                             content = file.read()
                         content = content.replace("{{username}}", profileContent[email]["username"])
                         content = content.replace("{{email}}", email)
-                        # content = content.encode("utf-8")
                         content = content.replace("{{imageType}}", imageType.decode("utf-8"))
                         content = content.replace("{{profilePicture}}", base64.b64encode(profileContent[email]["profilePicture"]).decode("utf-8"))
 
                         response = f"HTTP/1.1 200 Well here you go buddy\r\nContent-type: text/html\r\n Content-Length: {len(content)}\r\n\r\n"
 
                         response = response.encode("utf-8") + content.encode("utf-8")
-                        logging.debug(f"Response: {response.decode('utf-8')}")
                     else:
                         logging.debug("404 page is being displayed")
                         requestType = "NOT_FOUND"
@@ -202,32 +182,32 @@ try:
                 elif requestType == "POST":
                     if path == "/register":
                         if registeration(itemsDict):
-                            logging.debug("Registration successful")
+                            logging.info("Registration successful")
                         else:
-                            logging.debug("Registration failed")
+                            logging.info("Registration failed")
                     elif path =="/login":
                         if login(itemsDict2):
 
                             response = f"HTTP/1.1 302 Found\r\nLocation: /profile\r\nContent-type: text/html\r\n\r\n"
                             response = response.encode("utf-8")
-                            # logging.debug(f"Response: {response.decode('utf-8')}")
                             logging.debug("Login successful")
+                            logging.info("Redirecting user to profile page")
                         else:
-                            logging.debug("Login failed")
+                            logging.info("Login failed")
                 
                 else:
-                    logging.debug("501 page is being displayed")
+                    logging.info("501 page is being displayed")
                     response = httpResponse("website/501.html", "text/html", httpVersion, requestType, False,False)
                 # sending the response to the client
                 conn.sendall(response)
             except Exception as e:
-                logging.error(f"Data could not be read from client:{e}")
+                logging.info(f"Data could not be read from client:{e}")
 
         except socket.timeout as e:
-            logging.error(f"Timeout:{e}")
+            logging.info(f"Timeout:{e}")
         finally:
             if conn:
-                logging.info("Closing the connection")
+                # logging.info("Closing the connection")
                 conn.close()
 except KeyboardInterrupt:
     logging.info("Server is shutting down")
